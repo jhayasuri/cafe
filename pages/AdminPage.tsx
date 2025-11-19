@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line 
 } from 'recharts';
-import { Edit, Trash, Plus, X } from 'lucide-react';
+import { Edit, Trash, Plus, X, Package } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { Category, MenuItem } from '../types';
 
@@ -12,7 +13,7 @@ const AdminPage = () => {
   
   // Form State
   const [newItem, setNewItem] = useState<Partial<MenuItem>>({
-    name: '', description: '', price: 0, category: Category.DRINKS, image: 'https://picsum.photos/400/400', available: true
+    name: '', description: '', price: 0, category: Category.DRINKS, image: 'https://picsum.photos/400/400', available: true, stock: 20
   });
 
   // Calculate Stats
@@ -41,11 +42,12 @@ const AdminPage = () => {
       price: Number(newItem.price),
       category: newItem.category as Category,
       image: newItem.image || 'https://picsum.photos/400/400',
-      available: true
+      available: true,
+      stock: Number(newItem.stock) || 0
     } as MenuItem);
     
     setIsModalOpen(false);
-    setNewItem({ name: '', description: '', price: 0, category: Category.DRINKS, image: 'https://picsum.photos/400/400', available: true });
+    setNewItem({ name: '', description: '', price: 0, category: Category.DRINKS, image: 'https://picsum.photos/400/400', available: true, stock: 20 });
   };
 
   return (
@@ -120,6 +122,7 @@ const AdminPage = () => {
                 <th className="px-6 py-3">Item</th>
                 <th className="px-6 py-3">Category</th>
                 <th className="px-6 py-3">Price</th>
+                <th className="px-6 py-3">Stock</th>
                 <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -134,6 +137,12 @@ const AdminPage = () => {
                   </td>
                   <td className="px-6 py-4 text-stone-600">{item.category}</td>
                   <td className="px-6 py-4 font-mono">${item.price.toFixed(2)}</td>
+                  <td className="px-6 py-4 font-mono">
+                    <div className={`flex items-center gap-1 ${item.stock < 5 ? 'text-red-600 font-bold' : 'text-stone-600'}`}>
+                      <Package size={14} />
+                      {item.stock}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <button 
                       onClick={() => deleteMenuItem(item.id)}
@@ -187,15 +196,24 @@ const AdminPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
-                  <select 
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Stock Qty</label>
+                  <input 
+                    type="number" required min="0"
                     className="w-full border border-stone-300 rounded-lg p-2"
-                    value={newItem.category}
-                    onChange={e => setNewItem({...newItem, category: e.target.value as Category})}
-                  >
-                    {Object.values(Category).map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                    value={newItem.stock}
+                    onChange={e => setNewItem({...newItem, stock: e.target.value})}
+                  />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
+                <select 
+                  className="w-full border border-stone-300 rounded-lg p-2"
+                  value={newItem.category}
+                  onChange={e => setNewItem({...newItem, category: e.target.value as Category})}
+                >
+                  {Object.values(Category).map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
               </div>
               <button type="submit" className="w-full bg-stone-900 text-white py-3 rounded-lg font-bold hover:bg-stone-800 mt-2">
                 Create Item

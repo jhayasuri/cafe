@@ -1,11 +1,12 @@
+
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Plus } from 'lucide-react';
+import { Search, Filter, Plus, AlertCircle } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { Category } from '../types';
 import AIBarista from '../components/AIBarista';
 
 const MenuPage = () => {
-  const { menu, addToCart } = useStore();
+  const { menu, addToCart, cart } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
 
@@ -16,6 +17,11 @@ const MenuPage = () => {
       return matchesSearch && matchesCategory;
     });
   }, [menu, searchTerm, selectedCategory]);
+
+  const getCartQuantity = (itemId: string) => {
+    const item = cart.find(i => i.id === itemId);
+    return item ? item.quantity : 0;
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 pb-20 md:pb-10">
@@ -65,42 +71,54 @@ const MenuPage = () => {
       {/* Menu Grid */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredMenu.map((item) => (
-            <div key={item.id} className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden group hover:shadow-md transition-all">
-              <div className="relative aspect-video overflow-hidden">
-                <img 
-                  src={item.image} 
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                {!item.available && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm px-3 py-1 border border-white rounded">SOLD OUT</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-bold text-stone-900">{item.name}</h3>
-                    <span className="text-xs text-stone-500 bg-stone-100 px-2 py-0.5 rounded mt-1 inline-block">{item.category}</span>
-                  </div>
-                  <span className="font-bold text-amber-700">${item.price.toFixed(2)}</span>
+          {filteredMenu.map((item) => {
+            const cartQty = getCartQuantity(item.id);
+            const isSoldOut = item.stock <= 0;
+            const isLowStock = item.stock > 0 && item.stock < 5;
+            const canAdd = item.stock > cartQty;
+
+            return (
+              <div key={item.id} className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden group hover:shadow-md transition-all">
+                <div className="relative aspect-video overflow-hidden">
+                  <img 
+                    src={item.image} 
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  {isSoldOut && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <span className="text-white font-bold text-sm px-3 py-1 border border-white rounded">SOLD OUT</span>
+                    </div>
+                  )}
+                  {!isSoldOut && isLowStock && (
+                     <div className="absolute bottom-2 right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                       <AlertCircle size={12} /> Only {item.stock} left
+                     </div>
+                  )}
                 </div>
-                <p className="text-stone-500 text-sm line-clamp-2 mb-4 h-10">{item.description}</p>
                 
-                <button
-                  onClick={() => addToCart(item)}
-                  disabled={!item.available}
-                  className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white py-2.5 rounded-lg font-medium hover:bg-stone-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Plus size={18} />
-                  Add to Order
-                </button>
+                <div className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-bold text-stone-900">{item.name}</h3>
+                      <span className="text-xs text-stone-500 bg-stone-100 px-2 py-0.5 rounded mt-1 inline-block">{item.category}</span>
+                    </div>
+                    <span className="font-bold text-amber-700">${item.price.toFixed(2)}</span>
+                  </div>
+                  <p className="text-stone-500 text-sm line-clamp-2 mb-4 h-10">{item.description}</p>
+                  
+                  <button
+                    onClick={() => addToCart(item)}
+                    disabled={!item.available || isSoldOut || !canAdd}
+                    className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white py-2.5 rounded-lg font-medium hover:bg-stone-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Plus size={18} />
+                    {canAdd ? 'Add to Order' : 'Max Limit Reached'}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {filteredMenu.length === 0 && (

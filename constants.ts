@@ -1,3 +1,4 @@
+
 import { MenuItem, Category, User, TransactionType } from './types';
 
 export const MOCK_MENU: MenuItem[] = [
@@ -9,6 +10,7 @@ export const MOCK_MENU: MenuItem[] = [
     category: Category.DRINKS,
     image: 'https://picsum.photos/id/425/400/400',
     available: true,
+    stock: 25,
     calories: 250
   },
   {
@@ -19,6 +21,7 @@ export const MOCK_MENU: MenuItem[] = [
     category: Category.SNACKS,
     image: 'https://picsum.photos/id/493/400/400',
     available: true,
+    stock: 15,
     calories: 320
   },
   {
@@ -29,6 +32,7 @@ export const MOCK_MENU: MenuItem[] = [
     category: Category.COMBOS,
     image: 'https://picsum.photos/id/1060/400/400',
     available: true,
+    stock: 10,
     calories: 450
   },
   {
@@ -39,6 +43,7 @@ export const MOCK_MENU: MenuItem[] = [
     category: Category.DRINKS,
     image: 'https://picsum.photos/id/431/400/400',
     available: true,
+    stock: 20,
     calories: 210
   },
   {
@@ -49,6 +54,7 @@ export const MOCK_MENU: MenuItem[] = [
     category: Category.SPECIALS,
     image: 'https://picsum.photos/id/1080/400/400',
     available: true,
+    stock: 8,
     calories: 180
   },
   {
@@ -59,6 +65,7 @@ export const MOCK_MENU: MenuItem[] = [
     category: Category.SNACKS,
     image: 'https://picsum.photos/id/292/400/400',
     available: true,
+    stock: 12,
     calories: 340
   }
 ];

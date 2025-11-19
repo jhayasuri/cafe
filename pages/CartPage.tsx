@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
-import { Minus, Plus, Trash2, ArrowRight, CreditCard, CheckCircle } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowRight, CreditCard, CheckCircle, AlertCircle } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { Link } from 'react-router-dom';
 
 const CartPage = () => {
-  const { cart, updateCartQuantity, removeFromCart, processPayment, user } = useStore();
+  const { cart, updateCartQuantity, removeFromCart, processPayment, user, menu } = useStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -20,10 +21,10 @@ const CartPage = () => {
     await new Promise(r => setTimeout(r, 1000));
     
     const result = await processPayment();
-    if (result) {
+    if (result.success) {
       setSuccess(true);
     } else {
-      setError('Insufficient funds. Please top up your wallet.');
+      setError(result.message || 'Payment failed');
     }
     setIsProcessing(false);
   };
@@ -65,7 +66,12 @@ const CartPage = () => {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
-          {cart.map((item) => (
+          {cart.map((item) => {
+            const menuItem = menu.find(m => m.id === item.id);
+            const currentStock = menuItem ? menuItem.stock : 0;
+            const isStockIssue = currentStock < item.quantity;
+
+            return (
             <div key={item.id} className="flex gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
               <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-lg bg-stone-100" />
               
@@ -74,6 +80,11 @@ const CartPage = () => {
                   <div>
                     <h3 className="font-semibold text-stone-900">{item.name}</h3>
                     <p className="text-sm text-stone-500">{item.category}</p>
+                    {isStockIssue && (
+                       <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                         <AlertCircle size={12} /> Only {currentStock} available
+                       </p>
+                    )}
                   </div>
                   <button 
                     onClick={() => removeFromCart(item.id)}
@@ -94,7 +105,8 @@ const CartPage = () => {
                     <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
                     <button 
                       onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
-                      className="w-8 h-8 flex items-center justify-center rounded bg-white text-stone-600 shadow-sm hover:text-stone-900"
+                      className={`w-8 h-8 flex items-center justify-center rounded bg-white text-stone-600 shadow-sm hover:text-stone-900 ${item.quantity >= currentStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={item.quantity >= currentStock}
                     >
                       <Plus size={14} />
                     </button>
@@ -105,7 +117,8 @@ const CartPage = () => {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Order Summary */}

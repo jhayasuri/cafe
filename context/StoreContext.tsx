@@ -1,6 +1,12 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, MenuItem, CartItem, Transaction, TransactionType, Order } from '../types';
 import { MOCK_MENU, INITIAL_USER } from '../constants';
+
+interface PaymentResult {
+  success: boolean;
+  message: string;
+}
 
 interface StoreContextType {
   user: User;
@@ -14,7 +20,7 @@ interface StoreContextType {
   updateCartQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   walletTopUp: (amount: number) => void;
-  processPayment: () => Promise<boolean>;
+  processPayment: () => Promise<PaymentResult>;
   addMenuItem: (item: MenuItem) => void;
   updateMenuItem: (item: MenuItem) => void;
   deleteMenuItem: (id: string) => void;
@@ -53,9 +59,13 @@ export const StoreProvider = ({ children }: { children?: ReactNode }) => {
   };
 
   const addToCart = (item: MenuItem) => {
+    if (item.stock <= 0) return;
+    
     setCart(prev => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {
+        // Check stock limit
+        if (existing.quantity >= item.stock) return prev;
         return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
       }
       return [...prev, { ...item, quantity: 1 }];
@@ -71,6 +81,10 @@ export const StoreProvider = ({ children }: { children?: ReactNode }) => {
       removeFromCart(itemId);
       return;
     }
+    
+    const item = menu.find(m => m.id === itemId);
+    if (item && quantity > item.stock) return; // Prevent adding more than stock
+
     setCart(prev => prev.map(i => i.id === itemId ? { ...i, quantity } : i));
   };
 
@@ -94,10 +108,31 @@ export const StoreProvider = ({ children }: { children?: ReactNode }) => {
     }));
   };
 
-  const processPayment = async (): Promise<boolean> => {
+  const processPayment = async (): Promise<PaymentResult> => {
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
-    if (user.wallet.balance < total) return false;
+    if (user.wallet.balance < total) {
+      return { success: false, message: 'Insufficient funds. Please top up your wallet.' };
+    }
+
+    // Validate Stock one last time
+    for (const cartItem of cart) {
+      const menuItem = menu.find(m => m.id === cartItem.id);
+      if (!menuItem) return { success: false, message: `Item ${cartItem.name} no longer exists.` };
+      if (menuItem.stock < cartItem.quantity) {
+        return { success: false, message: `Not enough stock for ${cartItem.name}. Available: ${menuItem.stock}` };
+      }
+    }
+
+    // Deduct Stock
+    const newMenu = menu.map(m => {
+      const cartItem = cart.find(c => c.id === m.id);
+      if (cartItem) {
+        return { ...m, stock: m.stock - cartItem.quantity };
+      }
+      return m;
+    });
+    setMenu(newMenu);
 
     const newTransaction: Transaction = {
       id: `tx_${Date.now()}`,
@@ -127,7 +162,7 @@ export const StoreProvider = ({ children }: { children?: ReactNode }) => {
 
     setOrders(prev => [newOrder, ...prev]);
     clearCart();
-    return true;
+    return { success: true, message: 'Payment successful!' };
   };
 
   // Admin CRUD

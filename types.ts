@@ -1,3 +1,4 @@
+
 export enum Category {
   DRINKS = 'Drinks',
   SNACKS = 'Snacks',
@@ -13,6 +14,7 @@ export interface MenuItem {
   category: Category;
   image: string;
   available: boolean;
+  stock: number;
   calories?: number;
 }
 
