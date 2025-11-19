@@ -45,7 +45,7 @@ const ArchitectureView = () => {
             <div>
               <h3 className="font-bold text-amber-700 mb-2">Admin Management Flow</h3>
               <div className="bg-stone-50 p-4 rounded border border-stone-200 font-mono text-xs md:text-sm whitespace-pre-wrap">
-                [Login as Admin] -&gt; [Dashboard View] -&gt; [Check Sales Stats] -&gt; [Inventory Table] -&gt; [Add/Delete Item] -&gt; [Update Stock Count] -&gt; [Database Update]
+                {`[Login as Admin] -> [Dashboard View] -> [Check Sales Stats] -> [Inventory Table] -> [Add/Delete Item] -> [Update Stock Count] -> [Database Update]`}
               </div>
             </div>
           </div>
