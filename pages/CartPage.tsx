@@ -165,10 +165,14 @@ const CartPage = () => {
             <button
               onClick={handleCheckout}
               disabled={!canAfford || isProcessing}
-              className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-stone-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-stone-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-3"
             >
               {isProcessing ? 'Processing...' : 'Pay Now'}
             </button>
+
+            <Link to="/" className="block w-full text-center py-2 text-stone-500 font-medium hover:text-stone-800 text-sm">
+              Continue Shopping
+            </Link>
           </div>
         </div>
       </div>

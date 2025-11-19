@@ -133,7 +133,7 @@ const ArchitectureView = () => {
         </section>
 
         {/* 5. Intern Build Plan */}
-        <section>
+        <section className="mb-12">
           <h2 className="text-xl font-bold border-b border-stone-200 pb-2 mb-4">5. Intern Build Plan</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <ol className="list-decimal pl-5 space-y-4 text-stone-600 text-sm">
@@ -167,6 +167,29 @@ const ArchitectureView = () => {
                 <li>Test the "Out of Stock" scenarios thoroughly.</li>
               </ul>
             </div>
+          </div>
+        </section>
+
+        {/* 6. Security & Validation */}
+        <section>
+          <h2 className="text-xl font-bold border-b border-stone-200 pb-2 mb-4">6. Security & Validation</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+             <div>
+                <h3 className="font-bold text-amber-700 mb-2">Validation Rules</h3>
+                <ul className="list-disc pl-5 text-sm text-stone-600 space-y-1">
+                   <li><strong>Stock Check:</strong> Prevent adding items if requested quantity &gt; available stock.</li>
+                   <li><strong>Wallet Balance:</strong> Ensure <code className="bg-stone-100 px-1 rounded">user.balance &ge; order.total</code> before processing payment.</li>
+                   <li><strong>Negative Values:</strong> Prevent negative inputs for top-ups or prices in both UI and Context.</li>
+                </ul>
+             </div>
+             <div>
+                <h3 className="font-bold text-amber-700 mb-2">Security Considerations</h3>
+                <ul className="list-disc pl-5 text-sm text-stone-600 space-y-1">
+                   <li><strong>API Keys:</strong> In production, AI keys must be stored backend-side (e.g., via API Gateway/Edge Function), not exposed in frontend code.</li>
+                   <li><strong>Input Sanitization:</strong> Backend must sanitize all text inputs to prevent NoSQL Injection or XSS attacks.</li>
+                   <li><strong>Authentication:</strong> Use JWT (JSON Web Tokens) or HttpOnly Session cookies for secure user state management. Do not trust client-side localStorage for auth tokens.</li>
+                </ul>
+             </div>
           </div>
         </section>
       </div>
